@@ -1,5 +1,8 @@
+#include <cmath>
+#include <string>
 #include "XLibrary11.hpp"
 
+using namespace std;
 using namespace XLibrary11;
 
 enum MODE
@@ -11,15 +14,19 @@ int MAIN()
 {
     const int blockNumber = 10;
     const float blockInterval = 200.0f;
-    const float blockAmplitude = 300.0f;
+    const float blockAmplitude = 200.0f;
     const float blockSpace = 200.0f;
     const float gravityAcceleration = 0.5f;
     const float jumpForce = 10.0f;
     const float speed = 2.0f;
 
     float blockOffset = 0.0f;
+    float position = 0.0f;
     float gravity = 0.0f;
+    int score = 0;
     MODE mode = TITLE;
+
+    App::SetTitle(L"‚Í‚Î‚½‚¯’¹");
 
     Camera camera;
     camera.color = Float4(0.5f, 0.75f, 1.0f, 1.0f);
@@ -29,6 +36,16 @@ int MAIN()
 
     Sprite block(L"Block.png");
     block.scale = 5.0f;
+
+    Text scoreText(L"0", 16);
+    scoreText.position.y = 200.0f;
+    scoreText.scale = 5.0f;
+    scoreText.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
+
+    Text title(L"‚Í‚Î‚½‚¯’¹", 32);
+    title.position.x = 100.0f;
+    title.scale = 2.0f;
+    title.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
 
     Float2 blockPosition[blockNumber];
 
@@ -43,8 +60,11 @@ int MAIN()
             if (App::GetKeyDown(VK_SPACE))
             {
                 blockOffset = 0.0f;
+                position = 0.0f;
                 gravity = 0.0f;
+                score = 0;
                 mode = GAME;
+                scoreText.Create(L"0", 16);
 
                 for (int i = 0; i < blockNumber; i++)
                 {
@@ -54,8 +74,13 @@ int MAIN()
             }
 
             player.position = Float3(-200.0f, 0.0f, 0.0f);
+            position = player.position.x;
             player.angles.z = 0.0f;
             player.Draw();
+
+            title.Draw();
+
+            scoreText.Draw();
 
             break;
 
@@ -96,14 +121,28 @@ int MAIN()
 
             blockOffset -= speed;
 
+
             gravity -= gravityAcceleration;
 
             if (App::GetKeyDown(VK_SPACE))
+            {
                 gravity = jumpForce;
+            }
 
             player.position.y += gravity;
             player.angles.z = gravity * 5.0f;
             player.Draw();
+
+            position += speed;
+
+            if (position > blockInterval)
+            {
+                position -= blockInterval;
+                score++;
+                scoreText.Create(to_wstring(score), 16);
+            }
+
+            scoreText.Draw();
 
             break;
         }
