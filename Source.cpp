@@ -5,9 +5,9 @@
 using namespace std;
 using namespace XLibrary11;
 
-enum MODE
+enum Mode
 {
-    TITLE, GAME
+    Title, Game
 };
 
 int MAIN()
@@ -24,28 +24,32 @@ int MAIN()
     float position = 0.0f;
     float gravity = 0.0f;
     int score = 0;
-    MODE mode = TITLE;
+    Mode mode = Title;
 
     App::SetTitle(L"‚Í‚Î‚½‚¯’¹");
 
     Camera camera;
     camera.color = Float4(0.5f, 0.75f, 1.0f, 1.0f);
 
-    Sprite player(L"Player.png");
-    player.scale = 3.0f;
+    Sprite playerSprite(L"player.png");
+    playerSprite.scale = 3.0f;
 
-    Sprite block(L"Block.png");
-    block.scale = 5.0f;
+    Sprite blockSprite(L"block.png");
+    blockSprite.scale = 5.0f;
 
     Text scoreText(L"0", 16);
     scoreText.position.y = 200.0f;
     scoreText.scale = 5.0f;
     scoreText.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
 
-    Text title(L"‚Í‚Î‚½‚¯’¹", 32);
-    title.position.x = 100.0f;
-    title.scale = 2.0f;
-    title.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
+    Text titleText(L"‚Í‚Î‚½‚¯’¹", 32);
+    titleText.position.x = 100.0f;
+    titleText.scale = 2.0f;
+    titleText.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
+
+    Sound flySound(L"fly.wav");
+    Sound hitSound(L"hit.wav");
+    Sound pointSound(L"point.wav");
 
     Float2 blockPosition[blockNumber];
 
@@ -55,7 +59,7 @@ int MAIN()
 
         switch (mode)
         {
-        case TITLE:
+        case Title:
 
             if (App::GetKeyDown(VK_SPACE))
             {
@@ -63,7 +67,7 @@ int MAIN()
                 position = 0.0f;
                 gravity = 0.0f;
                 score = 0;
-                mode = GAME;
+                mode = Game;
                 scoreText.Create(L"0", 16);
 
                 for (int i = 0; i < blockNumber; i++)
@@ -73,18 +77,18 @@ int MAIN()
                 }
             }
 
-            player.position = Float3(-200.0f, 0.0f, 0.0f);
-            position = player.position.x;
-            player.angles.z = 0.0f;
-            player.Draw();
+            playerSprite.position = Float3(-200.0f, 0.0f, 0.0f);
+            position = playerSprite.position.x;
+            playerSprite.angles.z = 0.0f;
+            playerSprite.Draw();
 
-            title.Draw();
+            titleText.Draw();
 
             scoreText.Draw();
 
             break;
 
-        case GAME:
+        case Game:
 
             for (int i = 0; i < blockNumber; i++)
             {
@@ -94,29 +98,30 @@ int MAIN()
                     blockOffset = blockPosition[i].x;
                 }
 
-                float playerSize = player.GetSize().x * player.scale.x * 0.8f;
-                float blockWidth = (block.GetSize().x * block.scale.x + playerSize) / 2.0f;
+                float playerSize = playerSprite.GetSize().x * playerSprite.scale.x * 0.8f;
+                float blockWidth = (blockSprite.GetSize().x * blockSprite.scale.x + playerSize) / 2.0f;
                 float blockHeight = (blockSpace - playerSize) / 2.0f;
 
-                if (blockPosition[i].x - blockWidth < player.position.x &&
-                    blockPosition[i].x + blockWidth > player.position.x)
+                if (blockPosition[i].x - blockWidth < playerSprite.position.x &&
+                    blockPosition[i].x + blockWidth > playerSprite.position.x)
                 {
-                    if (blockPosition[i].y - blockHeight > player.position.y ||
-                        blockPosition[i].y + blockHeight < player.position.y)
+                    if (blockPosition[i].y - blockHeight > playerSprite.position.y ||
+                        blockPosition[i].y + blockHeight < playerSprite.position.y)
                     {
-                        mode = TITLE;
+                        mode = Title;
+                        hitSound.Play();
                     }
                 }
 
                 blockPosition[i].x -= speed;
 
-                block.position = blockPosition[i];
-                block.position.y += (block.GetSize().y * block.scale.y + blockSpace) / 2.0f;
-                block.Draw();
+                blockSprite.position = blockPosition[i];
+                blockSprite.position.y += (blockSprite.GetSize().y * blockSprite.scale.y + blockSpace) / 2.0f;
+                blockSprite.Draw();
 
-                block.position = blockPosition[i];
-                block.position.y -= (block.GetSize().y * block.scale.y + blockSpace) / 2.0f;
-                block.Draw();
+                blockSprite.position = blockPosition[i];
+                blockSprite.position.y -= (blockSprite.GetSize().y * blockSprite.scale.y + blockSpace) / 2.0f;
+                blockSprite.Draw();
             }
 
             blockOffset -= speed;
@@ -127,11 +132,12 @@ int MAIN()
             if (App::GetKeyDown(VK_SPACE))
             {
                 gravity = jumpForce;
+                flySound.Play();
             }
 
-            player.position.y += gravity;
-            player.angles.z = gravity * 5.0f;
-            player.Draw();
+            playerSprite.position.y += gravity;
+            playerSprite.angles.z = gravity * 5.0f;
+            playerSprite.Draw();
 
             position += speed;
 
@@ -140,6 +146,7 @@ int MAIN()
                 position -= blockInterval;
                 score++;
                 scoreText.Create(to_wstring(score), 16);
+                pointSound.Play();
             }
 
             scoreText.Draw();
