@@ -14,10 +14,9 @@ int MAIN()
 {
     const int blockNumber = 10;
     const float blockInterval = 200.0f;
-    const float blockAmplitude = 200.0f;
     const float blockSpace = 200.0f;
-    const float gravityAcceleration = 0.5f;
-    const float jumpForce = 10.0f;
+    const float gravitySpeed = 0.5f;
+    const float jumpSpeed = 10.0f;
     const float speed = 2.0f;
 
     float blockOffset = 0.0f;
@@ -72,7 +71,7 @@ int MAIN()
 
                 for (int i = 0; i < blockNumber; i++)
                 {
-                    blockPosition[i] = Float2(blockOffset + blockInterval, rand() / (float)RAND_MAX * blockAmplitude - blockAmplitude / 2);
+                    blockPosition[i] = Float2(blockOffset + blockInterval, rand() / (float)RAND_MAX * blockSpace - blockSpace / 2);
                     blockOffset = blockPosition[i].x;
                 }
             }
@@ -94,7 +93,7 @@ int MAIN()
             {
                 if (blockPosition[i].x < -App::GetWindowSize().x)
                 {
-                    blockPosition[i] = Float2(blockOffset + blockInterval, rand() / (float)RAND_MAX * blockAmplitude - blockAmplitude / 2);
+                    blockPosition[i] = Float2(blockOffset + blockInterval, rand() / (float)RAND_MAX * blockSpace - blockSpace / 2);
                     blockOffset = blockPosition[i].x;
                 }
 
@@ -127,11 +126,11 @@ int MAIN()
             blockOffset -= speed;
 
 
-            gravity -= gravityAcceleration;
+            gravity -= gravitySpeed;
 
             if (App::GetKeyDown(VK_SPACE))
             {
-                gravity = jumpForce;
+                gravity = jumpSpeed;
                 flySound.Play();
             }
 
