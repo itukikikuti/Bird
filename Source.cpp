@@ -91,7 +91,7 @@ int MAIN()
 
             for (int i = 0; i < blockNumber; i++)
             {
-                if (blockPosition[i].x < -App::GetWindowSize().x / 2)
+                if (blockPosition[i].x < -App::GetWindowSize().x)
                 {
                     blockPosition[i] = Float2(blockOffset + blockInterval, rand() / (float)RAND_MAX * blockSpace - blockSpace / 2);
                     blockOffset = blockPosition[i].x;
