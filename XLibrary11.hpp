@@ -673,6 +673,7 @@ public:
 
         textureFactory.CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER);
 
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &textFactory);
 
         App::Window::AddProcedure(this);
 
@@ -706,6 +707,10 @@ public:
     {
         return *textureFactory;
     }
+    IDWriteFactory& GetTextFactory() const
+    {
+        return *textFactory.Get();
+    }
     void Update()
     {
         swapChain->Present(1, 0);
@@ -718,6 +723,7 @@ private:
     ATL::CComPtr<ID2D1DeviceContext> context2D = nullptr;
     ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
     ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
+    Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
 
     void SetViewport()
     {
@@ -943,6 +949,10 @@ private:
     static IWICImagingFactory& GetTextureFactory()
     {
         return GetGraphics().GetTextureFactory();
+    }
+    static IDWriteFactory& GetTextFactory()
+    {
+        return GetGraphics().GetTextFactory();
     }
     static bool GetKey(int VK_CODE)
     {
@@ -1772,12 +1782,13 @@ protected:
 class Text : public Sprite
 {
 public:
-    Text(const std::wstring& text = L"", float fontSize = 16.0f, const wchar_t* const fontFace = L"")
+    Text(const std::wstring& text = L"", float fontSize = 16.0f, const wchar_t* const fontFace = L"ＭＳ ゴシック")
     {
         Sprite::Initialize();
+        color = Float4(0.0f, 0.0f, 0.0f, 1.0f);
         Create(text, fontSize, fontFace);
     }
-    void Create(const std::wstring& text = L"", float fontSize = 16.0f, const wchar_t* const fontFace = L"")
+    void Create(const std::wstring& text = L"", float fontSize = 16.0f, const wchar_t* const fontFace = L"ＭＳ ゴシック")
     {
         if (text == L"")
             return;
@@ -1803,34 +1814,30 @@ public:
             }
         }
 
-        DirectX::XMINT2 textureSize(static_cast<int>(length.x * fontSize), static_cast<int>(length.y * fontSize * 1.5f));
+        DirectX::XMINT2 textureSize(static_cast<int>(length.x * fontSize), static_cast<int>(length.y * fontSize * 2.0f));
         std::unique_ptr<BYTE[]> buffer(new BYTE[textureSize.x * textureSize.y * 4]);
         texture.Create(buffer.get(), textureSize.x, textureSize.y);
 
         ATL::CComPtr<IDXGISurface> surface = nullptr;
         texture.GetInterface().QueryInterface(&surface);
 
-        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &factory);
-
         D2D1_BITMAP_PROPERTIES1 bitmapProperties = {};
         bitmapProperties.pixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
         bitmapProperties.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
         bitmapProperties.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET;
 
-        ATL::CComPtr<ID2D1Bitmap1> bitmap = nullptr;
+        bitmap.Release();
         App::GetGraphicsContext2D().CreateBitmapFromDxgiSurface(surface, bitmapProperties, &bitmap);
 
-        App::GetGraphicsContext2D().SetTarget(bitmap);
-
         brush.Reset();
-        App::GetGraphicsContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), brush.GetAddressOf());
+        App::GetGraphicsContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), brush.GetAddressOf());
         App::GetGraphicsContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
         textFormat.Reset();
-        factory->CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
+        App::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
 
         textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
-        textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+        textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
         mesh.GetMaterial().SetTexture(0, &texture);
 
@@ -1838,11 +1845,13 @@ public:
     }
     void Draw()
     {
+        App::GetGraphicsContext2D().SetTarget(bitmap);
+
         App::GetGraphicsContext2D().BeginDraw();
         App::GetGraphicsContext2D().Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
 
         Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayout = nullptr;
-        factory->CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), static_cast<float>(texture.GetSize().x), static_cast<float>(texture.GetSize().y), textLayout.GetAddressOf());
+        App::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), static_cast<float>(texture.GetSize().x), static_cast<float>(texture.GetSize().y), textLayout.GetAddressOf());
 
         App::GetGraphicsContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), textLayout.Get(), brush.Get());
 
@@ -1856,7 +1865,7 @@ public:
 private:
     std::wstring text;
     DirectX::XMINT2 length;
-    Microsoft::WRL::ComPtr<IDWriteFactory> factory = nullptr;
+    ATL::CComPtr<ID2D1Bitmap1> bitmap = nullptr;
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush = nullptr;
     Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat = nullptr;
 };

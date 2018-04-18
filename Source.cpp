@@ -36,14 +36,14 @@ int MAIN()
     Sprite blockSprite(L"block.png");
     blockSprite.scale = 5.0f;
 
-    Text scoreText(L"0", 16.0f);
+    Text scoreText(L"0", 10.0f);
     scoreText.position.y = 200.0f;
-    scoreText.scale = 5.0f;
+    scoreText.scale = 10.0f;
     scoreText.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
 
-    Text titleText(L"‚Í‚Î‚½‚¯’¹", 32.0f);
+    Text titleText(L"‚Í‚Î‚½‚¯’¹", 80.0f);
     titleText.position.x = 100.0f;
-    titleText.scale = 2.0f;
+    titleText.scale = 1.0f;
     titleText.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
 
     Sound flySound(L"fly.wav");
@@ -67,7 +67,7 @@ int MAIN()
                 gravity = 0.0f;
                 score = 0;
                 mode = Game;
-                scoreText.Create(L"0", 16.0f);
+                scoreText.Create(L"0", 10.0f);
 
                 for (int i = 0; i < blockNumber; i++)
                 {
@@ -81,10 +81,8 @@ int MAIN()
             playerSprite.angles.z = 0.0f;
             playerSprite.Draw();
 
-            titleText.Create(L"‚Í‚Î‚½‚¯’¹", 32.0f);
             titleText.Draw();
 
-            scoreText.Create(to_wstring(score), 16.0f);
             scoreText.Draw();
 
             break;
@@ -93,7 +91,7 @@ int MAIN()
 
             for (int i = 0; i < blockNumber; i++)
             {
-                if (blockPosition[i].x < -App::GetWindowSize().x)
+                if (blockPosition[i].x < -App::GetWindowSize().x / 2)
                 {
                     blockPosition[i] = Float2(blockOffset + blockInterval, rand() / (float)RAND_MAX * blockSpace - blockSpace / 2);
                     blockOffset = blockPosition[i].x;
@@ -145,7 +143,7 @@ int MAIN()
             {
                 position -= blockInterval;
                 score++;
-                scoreText.Create(to_wstring(score), 16.0f);
+                scoreText.Create(to_wstring(score), 10.0f);
                 pointSound.Play();
             }
 
