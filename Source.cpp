@@ -36,12 +36,12 @@ int MAIN()
     Sprite blockSprite(L"block.png");
     blockSprite.scale = 5.0f;
 
-    Text scoreText(L"0", 16);
+    Text scoreText(L"0", 16.0f);
     scoreText.position.y = 200.0f;
     scoreText.scale = 5.0f;
     scoreText.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
 
-    Text titleText(L"‚Í‚Î‚½‚¯’¹", 32);
+    Text titleText(L"‚Í‚Î‚½‚¯’¹", 32.0f);
     titleText.position.x = 100.0f;
     titleText.scale = 2.0f;
     titleText.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -67,7 +67,7 @@ int MAIN()
                 gravity = 0.0f;
                 score = 0;
                 mode = Game;
-                scoreText.Create(L"0", 16);
+                scoreText.Create(L"0", 16.0f);
 
                 for (int i = 0; i < blockNumber; i++)
                 {
@@ -81,8 +81,10 @@ int MAIN()
             playerSprite.angles.z = 0.0f;
             playerSprite.Draw();
 
+            titleText.Create(L"‚Í‚Î‚½‚¯’¹", 32.0f);
             titleText.Draw();
 
+            scoreText.Create(to_wstring(score), 16.0f);
             scoreText.Draw();
 
             break;
@@ -125,7 +127,6 @@ int MAIN()
 
             blockOffset -= speed;
 
-
             gravity -= gravitySpeed;
 
             if (App::GetKeyDown(VK_SPACE))
@@ -144,7 +145,7 @@ int MAIN()
             {
                 position -= blockInterval;
                 score++;
-                scoreText.Create(to_wstring(score), 16);
+                scoreText.Create(to_wstring(score), 16.0f);
                 pointSound.Play();
             }
 
